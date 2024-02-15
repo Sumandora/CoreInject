@@ -8,7 +8,7 @@
 int main(int argc, char** argv)
 {
 	if (CoreInject::needsRoot()) {
-		std::cerr << "ERROR: This tool requires root privileges, because ptrace_scope is bigger than 0" << std::endl;
+		std::cerr << "ERROR: Your system's ptrace_scope setting is currently set above 0. In order to run this application, you must run it with root privileges. Please note that lowering ptrace_scope may compromise your system's security." << std::endl;
 		exit(1);
 	}
 
