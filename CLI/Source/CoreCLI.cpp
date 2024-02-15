@@ -8,11 +8,11 @@
 int main(int argc, char** argv)
 {
 	if (CoreInject::needsRoot()) {
-		std::cerr << "ERROR: This tool requires root privileges" << std::endl;
+		std::cerr << "ERROR: This tool requires root privileges, because ptrace_scope is bigger than 0" << std::endl;
 		exit(1);
 	}
 
-	argparse::ArgumentParser program("main");
+	argparse::ArgumentParser program("CoreCLI");
 	program.add_argument("-p", "--pid")
 		.help("The process id of the target process")
 		.required()
