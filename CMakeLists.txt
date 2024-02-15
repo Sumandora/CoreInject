@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.27)
+cmake_minimum_required(VERSION 3.20)
 project(CoreInject)
 
 add_library(CoreInject STATIC Source/CoreInject.cpp Source/ElfFile.cpp Source/Process.cpp Source/GDBProcess.cpp)
