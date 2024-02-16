@@ -1,8 +1,6 @@
 #include "Process.hpp"
 
 #include <fstream>
-#include <functional>
-#include <glob.h>
 #include <iostream>
 #include <sstream>
 

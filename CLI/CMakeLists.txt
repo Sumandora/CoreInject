@@ -1,6 +1,7 @@
 project(CoreCLI)
 
 add_executable(CoreCLI Source/CoreCLI.cpp)
+target_include_directories(CoreCLI PUBLIC "Include")
 
 add_subdirectory("../NeedsRoot" "NeedsRoot")
 

@@ -45,11 +45,12 @@ namespace CoreInject {
 			"Deletes the module after injection. In case of a sandbox workaround, this affects the relocated module, not the original"
 		};
 
-		static constexpr auto allSettings = std::tuple(
+		static constexpr std::tuple allSettings{
 			&Settings::allowDoubleInjection,
 			&Settings::workaroundSandboxes,
 			&Settings::overwriteRelocationTarget,
-			&Settings::deleteAfterInjection);
+			&Settings::deleteAfterInjection
+		};
 
 		template <typename F, std::size_t Idx = std::tuple_size_v<decltype(allSettings)> - 1>
 		constexpr void forEachSetting(F f)
@@ -72,7 +73,7 @@ namespace CoreInject {
 
 	public:
 		explicit CoreInject(std::size_t targetProcess,
-			const Settings& settings);
+			Settings  settings);
 
 		[[nodiscard]] std::size_t run(std::vector<Module> modules) const;
 	};

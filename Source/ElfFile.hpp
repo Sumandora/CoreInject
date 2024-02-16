@@ -1,7 +1,6 @@
 #ifndef COREINJECT_ELFFILE_HPP
 #define COREINJECT_ELFFILE_HPP
 
-#include <string>
 #include <cstdint>
 #include <filesystem>
 

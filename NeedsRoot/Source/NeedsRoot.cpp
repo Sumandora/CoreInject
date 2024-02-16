@@ -5,7 +5,7 @@
 
 CoreInject::PtraceScope CoreInject::getPtraceScope()
 {
-	auto fs = std::fstream{ "/proc/sys/kernel/yama/ptrace_scope", std::fstream::in };
+	std::fstream fs{ "/proc/sys/kernel/yama/ptrace_scope", std::fstream::in };
 	char c;
 	fs >> c;
 	fs.close();

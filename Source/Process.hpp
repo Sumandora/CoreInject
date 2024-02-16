@@ -4,7 +4,6 @@
 #include "ElfFile.hpp"
 
 #include <cstdint>
-#include <vector>
 #include <string>
 #include <filesystem>
 

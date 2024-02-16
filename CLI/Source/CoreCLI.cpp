@@ -5,6 +5,14 @@
 
 #include "argparse/argparse.hpp"
 
+#include "CoreCLI.hpp"
+
+std::string CoreInject::CoreCLI::flagNameToParamName(const std::string& flagName) {
+	return "--" + flagName;
+}
+
+using CoreInject::CoreCLI::flagNameToParamName;
+
 int main(int argc, char** argv)
 {
 	if (CoreInject::needsRoot()) {
@@ -26,10 +34,6 @@ int main(int argc, char** argv)
 
 	CoreInject::Settings settings;
 
-	static auto flagNameToParamName = [](const std::string& flagName) {
-		return "--" + flagName;
-	};
-
 	settings.forEachSetting([&program](const CoreInject::Flag& flag) {
 		program.add_argument(flagNameToParamName(flag.name))
 			.help(flag.description)
@@ -48,7 +52,7 @@ int main(int argc, char** argv)
 	auto modules = program.get<std::vector<std::string>>("--module");
 
 	settings.forEachSetting([&program](CoreInject::Flag& flag) {
-		auto paramName = flagNameToParamName(flag.name);
+		std::string paramName = flagNameToParamName(flag.name);
 		if(flag.dependant != nullptr)
 			if(program.is_used(paramName) && !program.is_used(flagNameToParamName(flag.dependant->name)))
 				std::cerr << flag.name + " depends on " + flag.dependant->name << ". Flipping " + flag.name + " will have no effect." << std::endl;
@@ -57,7 +61,10 @@ int main(int argc, char** argv)
 
 
 	CoreInject::CoreInject core(pid, settings);
-	std::size_t injected = core.run(std::vector<std::filesystem::path>(modules.begin(), modules.end()));
-
-	std::cout << "Injected " << injected << " modules into " << pid << std::endl;
+	try {
+		std::size_t injected = core.run(std::vector<std::filesystem::path>(modules.begin(), modules.end()));
+		std::cout << "Injected " << injected << " modules into " << pid << std::endl;
+	} catch (const std::runtime_error& e) {
+		std::cerr << "Injection failed\n" << e.what() << std::endl;
+	}
 }

@@ -10,27 +10,27 @@ using namespace CoreInject;
 
 GDBProcess::GDBProcess()
 {
-	int inputpipe[2];
-	int outputpipe[2];
+	int outputPipe[2];
+	int inputPipe[2];
 
-	pipe(inputpipe);
-	pipe(outputpipe);
+	pipe(outputPipe);
+	pipe(inputPipe);
 	int child;
 	if (child = fork(); child == 0) {
-		dup2(outputpipe[0], STDIN_FILENO);
-		dup2(inputpipe[1], STDOUT_FILENO);
-		dup2(inputpipe[1], STDERR_FILENO);
+		dup2(inputPipe[0], STDIN_FILENO);
+		dup2(outputPipe[1], STDOUT_FILENO);
+		dup2(outputPipe[1], STDERR_FILENO);
 		prctl(PR_SET_PDEATHSIG, SIGTERM);
-		close(outputpipe[1]);
-		close(inputpipe[0]);
+		close(inputPipe[1]);
+		close(outputPipe[0]);
 		execl("/usr/bin/gdb", "gdb", "-i=mi", nullptr);
 		exit(1);
 	}
-	close(outputpipe[0]);
-	close(inputpipe[1]);
+	close(inputPipe[0]);
+	close(outputPipe[1]);
 
-	inPipe = outputpipe[1];
-	outPipe = inputpipe[0];
+	inPipe = inputPipe[1];
+	outPipe = outputPipe[0];
 }
 
 GDBProcess::~GDBProcess()
