@@ -17,11 +17,11 @@ namespace CoreInject::CoreCLI {
 	const Parameter pid{ "-p", "--pid", "The process id of the target process" };
 	const Parameter module{ "-m", "--module", "The modules which are to be injected" };
 
-	std::string flagNameToParamName(const std::string& flagName) {
+	constexpr std::string flagNameToParamName(const std::string& flagName) {
 		return "--" + flagName;
 	}
 
-	std::string version = "1.1";
+	constexpr std::string version = "1.1";
 }
 
 #endif
