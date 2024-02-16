@@ -20,6 +20,8 @@ namespace CoreInject::CoreCLI {
 	std::string flagNameToParamName(const std::string& flagName) {
 		return "--" + flagName;
 	}
+
+	std::string version = "1.1";
 }
 
 #endif

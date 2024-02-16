@@ -11,12 +11,7 @@ using namespace CoreInject::CoreCLI;
 
 int main(int argc, char** argv)
 {
-	if (CoreInject::needsRoot()) {
-		std::cerr << privilegeError << std::endl;
-		exit(1);
-	}
-
-	argparse::ArgumentParser program("CoreCLI");
+	argparse::ArgumentParser program("CoreCLI", version);
 	program.add_argument(pid.shorthand, pid.longhand)
 		.help(pid.description)
 		.required()
@@ -41,6 +36,11 @@ int main(int argc, char** argv)
 		std::cerr << err.what() << std::endl;
 		std::cerr << program;
 		return 1;
+	}
+
+	if (CoreInject::needsRoot()) {
+		std::cerr << privilegeError << std::endl;
+		exit(1);
 	}
 
 #pragma clang diagnostic push
