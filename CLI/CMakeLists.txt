@@ -18,3 +18,5 @@ FetchContent_Declare(argparse
 FetchContent_MakeAvailable(argparse)
 
 target_link_libraries(CoreCLI CoreInject CoreInjectNeedsRoot argparse)
+
+install(TARGETS CoreCLI)
