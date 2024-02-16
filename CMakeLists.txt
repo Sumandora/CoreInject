@@ -11,4 +11,6 @@ target_include_directories(CoreInject PUBLIC "Include")
 add_subdirectory("Settings")
 target_link_libraries(CoreInject CoreInjectSettings)
 
-add_subdirectory("CLI")
+if(PROJECT_IS_TOP_LEVEL)
+    add_subdirectory("CLI")
+endif()
