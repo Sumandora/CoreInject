@@ -7,28 +7,23 @@
 
 #include "CoreCLI.hpp"
 
-std::string CoreInject::CoreCLI::flagNameToParamName(const std::string& flagName) {
-	return "--" + flagName;
-}
-
-using CoreInject::CoreCLI::flagNameToParamName;
+using namespace CoreInject::CoreCLI;
 
 int main(int argc, char** argv)
 {
 	if (CoreInject::needsRoot()) {
-		std::cerr << "ERROR: Your system's ptrace_scope setting is currently set above 0. In order to run this application, you must run it with root privileges. Please note that lowering ptrace_scope may compromise your system's security." << std::endl;
+		std::cerr << privilegeError << std::endl;
 		exit(1);
 	}
 
 	argparse::ArgumentParser program("CoreCLI");
-	program.add_argument("-p", "--pid")
-		.help("The process id of the target process")
+	program.add_argument(pid.shorthand, pid.longhand)
+		.help(pid.description)
 		.required()
 		.scan<'d', std::size_t>();
 
-	program.add_argument("-m", "--module")
-		.help("If enabled, then modules that are already loaded by the target process will be ignored\n"
-			  "Note: This doesn't work when the already injected module has been renamed, for better accuracy use OVERWRITE as existsStrategy when applicable")
+	program.add_argument(module.shorthand, module.longhand)
+		.help(module.description)
 		.append()
 		.required();
 
@@ -48,8 +43,11 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	auto pid = program.get<std::size_t>("--pid");
-	auto modules = program.get<std::vector<std::string>>("--module");
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshadow"
+	auto pid = program.get<std::size_t>(CoreInject::CoreCLI::pid.longhand);
+#pragma clang diagnostic pop
+	auto modules = program.get<std::vector<std::string>>(module.longhand);
 
 	settings.forEachSetting([&program](CoreInject::Flag& flag) {
 		std::string paramName = flagNameToParamName(flag.name);
