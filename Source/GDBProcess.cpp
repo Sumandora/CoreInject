@@ -24,7 +24,7 @@ GDBProcess::GDBProcess()
 		close(inputPipe[1]);
 		close(outputPipe[0]);
 		execl("/usr/bin/gdb", "gdb", "-i=mi", nullptr);
-		exit(1);
+		exit(0);
 	}
 	close(inputPipe[0]);
 	close(outputPipe[1]);
