@@ -15,7 +15,7 @@ CoreInject::CoreInject::CoreInject(std::size_t targetProcess, const Settings& se
 
 void CoreInject::CoreInject::removeAlreadyInjected(std::vector<Module>& modules) const
 {
-	if (!settings.preventDoubleInjection)
+	if (settings.allowDoubleInjection)
 		return;
 
 	std::erase_if(modules, [this](const Module& module) {
@@ -31,14 +31,11 @@ void CoreInject::CoreInject::relocateModules(std::vector<Module>& modules) const
 		Module newModule = process->intoRoot(process->getCwd()) / module.filename();
 
 		if (std::filesystem::exists(newModule)) {
-			switch (settings.existsStrategy) {
-			case Settings::ExistsStrategy::OVERWRITE: {
+			if (settings.overwriteRelocationTarget) {
 				std::error_code err;
 				if (!std::filesystem::remove(newModule, err))
 					throw std::runtime_error{ err.message() };
-				break;
-			}
-			case Settings::ExistsStrategy::RENAME: {
+			} else {
 				auto basePath = newModule.parent_path();
 				auto name = newModule.stem().string();
 				auto extension = newModule.extension().string();
@@ -48,8 +45,6 @@ void CoreInject::CoreInject::relocateModules(std::vector<Module>& modules) const
 					newModule = newPath;
 					c++;
 				}
-				break;
-			}
 			}
 		}
 
@@ -58,7 +53,7 @@ void CoreInject::CoreInject::relocateModules(std::vector<Module>& modules) const
 	});
 }
 
-void CoreInject::CoreInject::run(std::vector<Module> modules) const
+std::size_t CoreInject::CoreInject::run(std::vector<Module> modules) const
 {
 	if (std::ranges::any_of(modules, [arch = process->getExecutable().getArchitecture()](const Module& module) {
 			ElfFile elf(module);
@@ -68,7 +63,7 @@ void CoreInject::CoreInject::run(std::vector<Module> modules) const
 
 	removeAlreadyInjected(modules);
 	if (modules.empty()) {
-		return;
+		return modules.size(); // How unpredictable
 	}
 
 	relocateModules(modules);
@@ -91,10 +86,9 @@ void CoreInject::CoreInject::run(std::vector<Module> modules) const
 			throw std::runtime_error(module.filename().string() + " caused a fault");
 		}
 
-		if (settings.waitBetweenModules > 0)
-			std::this_thread::sleep_for(std::chrono::milliseconds(settings.waitBetweenModules));
-
 		if (settings.deleteAfterInjection)
 			std::filesystem::remove(module);
 	}
+
+	return modules.size();
 }

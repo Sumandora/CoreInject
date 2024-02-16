@@ -24,29 +24,17 @@ int main(int argc, char** argv)
 		.append()
 		.required();
 
-	program.add_argument("--preventDoubleInjection")
-		.help("If enabled, then modules wont be checked if they are already injected")
-		.flag();
+	CoreInject::Settings settings;
 
-	program.add_argument("--waitBetweenModules")
-		.help("If multiple modules are to be injected a self-imposed delay can be added by setting this variable over 0")
-		.default_value(0L)
-		.implicit_value(0L)
-		.scan<'d', long>();
+	static auto flagNameToParamName = [](const std::string& flagName) {
+		return "--" + flagName;
+	};
 
-	program.add_argument("--workaroundSandboxes")
-		.help("Before injection, move the library to the current working directory of the target process")
-		.flag();
-
-	program.add_argument("--existsStrategy")
-		.help("If the target file already exists, [then it will be overwritten/then the target will silently be renamed]")
-		.choices("OVERWRITE", "RENAME")
-		.default_value("OVERWRITE")
-		.implicit_value("OVERWRITE");
-
-	program.add_argument("--deleteAfterInjection")
-		.help("Deletes the module after injection. In case of a sandbox workaround, this affects the relocated module, not the original")
-		.flag();
+	settings.forEachSetting([&program](const CoreInject::Flag& flag) {
+		program.add_argument(flagNameToParamName(flag.name))
+			.help(flag.description)
+			.flag();
+	});
 
 	try {
 		program.parse_args(argc, argv);
@@ -58,16 +46,18 @@ int main(int argc, char** argv)
 
 	auto pid = program.get<std::size_t>("--pid");
 	auto modules = program.get<std::vector<std::string>>("--module");
-	CoreInject::Settings settings{
-		.preventDoubleInjection = program.get<bool>("--preventDoubleInjection"),
-		.waitBetweenModules = program.get<long>("--waitBetweenModules"),
-		.workaroundSandboxes = program.get<bool>("--workaroundSandboxes"),
-		.existsStrategy = program.get<std::string>("--existsStrategy") == "OVERWRITE" ? CoreInject::Settings::ExistsStrategy::OVERWRITE : CoreInject::Settings::ExistsStrategy::RENAME,
-		.deleteAfterInjection = program.get<bool>("--deleteAfterInjection")
-	};
 
-	std::cout << "Injecting " << modules.size() << " modules into " << pid << std::endl;
+	settings.forEachSetting([&program](CoreInject::Flag& flag) {
+		auto paramName = flagNameToParamName(flag.name);
+		if(flag.dependant != nullptr)
+			if(program.is_used(paramName) && !program.is_used(flagNameToParamName(flag.dependant->name)))
+				std::cerr << flag.name + " depends on " + flag.dependant->name << ". Flipping " + flag.name + " will have no effect." << std::endl;
+		flag.state = program.get<bool>(paramName);
+	});
+
 
 	CoreInject::CoreInject core(pid, settings);
-	core.run(std::vector<std::filesystem::path>(modules.begin(), modules.end()));
+	std::size_t injected = core.run(std::vector<std::filesystem::path>(modules.begin(), modules.end()));
+
+	std::cout << "Injected " << injected << " modules into " << pid << std::endl;
 }

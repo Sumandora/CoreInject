@@ -1,6 +1,7 @@
 #ifndef COREINJECT_HPP
 #define COREINJECT_HPP
 
+#include <any>
 #include <filesystem>
 #include <functional>
 #include <optional>
@@ -9,27 +10,58 @@
 #include <vector>
 
 namespace CoreInject {
-	using Module = std::filesystem::path;
+	struct Flag {
+		std::string name;
+		std::string description;
+		Flag* dependant = nullptr;
+		bool state = false;
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "google-explicit-constructor"
+		operator bool() const { return state; }
+#pragma clang diagnostic pop
+	};
 
 	struct Settings {
-		// If enabled, then modules that are already loaded by the target process will be ignored
-		// Note: This doesn't work when the already injected module has been renamed, for better accuracy use OVERWRITE as existsStrategy when applicable
-		bool preventDoubleInjection = true;
-
-		// If multiple modules are to be injected a self-imposed delay can be added by setting this variable over 0
-		time_t waitBetweenModules = 0;
-
-		// Before injection, move the library to the current working directory of the target process
-		bool workaroundSandboxes = false;
-		enum class ExistsStrategy { // If the target file already exists, ...
-			OVERWRITE, // then it will be overwritten
-			RENAME // then the target will silently be renamed
+		Flag allowDoubleInjection{
+			"allowDoubleInjection",
+			"If enabled, then modules that are already loaded by the target process wont be filtered\n"
+			"Note: Turning this off might not filter accurately because the library might be renamed when 'workaroundSandboxes' is used without 'overwriteRelocationTarget'"
 		};
-		ExistsStrategy existsStrategy = ExistsStrategy::OVERWRITE;
 
-		// Deletes the module after injection. In case of a sandbox workaround, this affects the relocated module, not the original
-		bool deleteAfterInjection = false;
+		Flag workaroundSandboxes{
+			"workaroundSandboxes",
+			"Before injection, move the library to the current working directory of the target process"
+		};
+
+		Flag overwriteRelocationTarget{
+			"overwriteRelocationTarget",
+			"If the target file already exists, then it will be overwritten",
+			&workaroundSandboxes
+		};
+
+		Flag deleteAfterInjection{
+			"deleteAfterInjection",
+			"Deletes the module after injection. In case of a sandbox workaround, this affects the relocated module, not the original"
+		};
+
+		static constexpr auto allSettings = std::tuple(
+			&Settings::allowDoubleInjection,
+			&Settings::workaroundSandboxes,
+			&Settings::overwriteRelocationTarget,
+			&Settings::deleteAfterInjection);
+
+		template <typename F, std::size_t Idx = std::tuple_size_v<decltype(allSettings)> - 1>
+		constexpr void forEachSetting(F f)
+		{
+			if constexpr (Idx > 0)
+				forEachSetting<F, Idx - 1>(f);
+
+			f(*this.*(std::get<Idx>(allSettings)));
+		}
 	};
+
+	using Module = std::filesystem::path;
 
 	class CoreInject {
 		struct Process* process;
@@ -42,7 +74,7 @@ namespace CoreInject {
 		explicit CoreInject(std::size_t targetProcess,
 			const Settings& settings);
 
-		void run(std::vector<Module> modules) const;
+		[[nodiscard]] std::size_t run(std::vector<Module> modules) const;
 	};
 };
 
