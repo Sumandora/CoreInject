@@ -5,4 +5,7 @@ add_library(CoreInject STATIC Source/CoreInject.cpp Source/ElfFile.cpp Source/Pr
 target_compile_features(CoreInject PUBLIC cxx_std_23)
 target_include_directories(CoreInject PUBLIC "Include")
 
+add_subdirectory("Settings")
+target_link_libraries(CoreInject CoreInjectSettings)
+
 add_subdirectory("CLI")
