@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
+
+include_guard()
+
 project(CoreInject)
 
 add_library(CoreInject STATIC Source/CoreInject.cpp Source/ElfFile.cpp Source/Process.cpp Source/GDBProcess.cpp)
