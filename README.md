@@ -11,9 +11,10 @@ CoreInject is a utility for injecting shared library objects (.so files) into ru
 
 ## Usage
 
+### This tool requires GDB to inject libraries
 Basic usage:
 ```
-coreinject -p 123 -m lib1.so -m lib2.so
+CoreCLI -p 123 -m lib1.so -m lib2.so
 ```
 This will inject lib1.so and lib2.so into the process with ID 123.
 
