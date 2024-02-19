@@ -4,13 +4,46 @@
 
 #include <algorithm>
 #include <format>
-#include <iostream>
+#include <ranges>
 #include <utility>
 
 CoreInject::CoreInject::CoreInject(std::size_t targetProcess, Settings settings)
 	: process(new Process(targetProcess))
 	, settings(std::move(settings))
 {
+	if(!std::filesystem::exists(process->getProcFS()))
+		throw std::runtime_error("Process doesn't exist");
+}
+
+void CoreInject::CoreInject::checkELFHeaders(const std::vector<Module>& modules) const {
+	if(settings.ignoreELFHeader)
+		return;
+
+	auto elfFiles = modules | std::ranges::views::transform([](const Module& module) {
+		return std::pair{ module, ElfFile{ module } };
+	});
+
+	using ModuleElfPair = std::pair<Module, ElfFile>;
+
+	auto invalidHeaders = elfFiles | std::ranges::views::filter([](const ModuleElfPair& pair) {
+		return !pair.second.isHeaderValid();
+	});
+	if (!invalidHeaders.empty()) {
+		std::string what = "Invalid ELF header(s):\n";
+		for(const auto& file : invalidHeaders)
+			what += file.first.string() + "\n";
+		throw std::runtime_error(what);
+	}
+
+	auto wrongArchitectures = elfFiles | std::ranges::views::filter([arch = process->getExecutable().getArchitecture()](const ModuleElfPair& pair) {
+		return pair.second.getArchitecture() != arch;
+	});
+	if (!wrongArchitectures.empty()) {
+		std::string what = "Architecture mismatch(es):\n";
+		for(const auto& file : wrongArchitectures)
+			what += file.first.string() + "\n";
+		throw std::runtime_error(what);
+	}
 }
 
 void CoreInject::CoreInject::removeAlreadyInjected(std::vector<Module>& modules) const
@@ -27,6 +60,7 @@ void CoreInject::CoreInject::relocateModules(std::vector<Module>& modules) const
 {
 	if (!settings.workaroundSandboxes || !process->isSandboxed())
 		return;
+
 	std::ranges::transform(modules, modules.begin(), [&](const Module& module) {
 		Module newModule = process->intoRoot(process->getCwd()) / module.filename();
 
@@ -55,11 +89,17 @@ void CoreInject::CoreInject::relocateModules(std::vector<Module>& modules) const
 
 std::size_t CoreInject::CoreInject::run(std::vector<Module> modules) const
 {
-	if (std::ranges::any_of(modules, [arch = process->getExecutable().getArchitecture()](const Module& module) {
-			ElfFile elf(module);
-			return elf.getArchitecture() != arch;
-		}))
-		throw std::runtime_error("Architecture mismatch");
+	auto nonExistant = modules | std::ranges::views::filter([](const Module& mod) {
+		return !std::filesystem::exists(mod);
+	});
+	if (!nonExistant.empty()) {
+		std::string what = "File(s) not found:\n";
+		for(const auto& file : nonExistant)
+			what += file.string() + "\n";
+		throw std::runtime_error(what);
+	}
+
+	checkELFHeaders(modules);
 
 	removeAlreadyInjected(modules);
 	if (modules.empty()) {

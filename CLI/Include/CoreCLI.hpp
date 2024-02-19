@@ -21,7 +21,7 @@ namespace CoreInject::CoreCLI {
 		return "--" + flagName;
 	}
 
-	constexpr std::string version = "1.1";
+	constexpr std::string version = "1.2";
 }
 
 #endif

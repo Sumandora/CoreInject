@@ -57,9 +57,9 @@ int main(int argc, char** argv)
 		flag.state = program.get<bool>(paramName);
 	});
 
-
-	CoreInject::CoreInject core(pid, settings);
 	try {
+		CoreInject::CoreInject core(pid, settings);
+
 		std::size_t injected = core.run(std::vector<std::filesystem::path>(modules.begin(), modules.end()));
 		std::cout << "Injected " << injected << " modules into " << pid << std::endl;
 	} catch (const std::runtime_error& e) {

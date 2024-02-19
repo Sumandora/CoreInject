@@ -18,6 +18,7 @@ namespace CoreInject {
 		struct Process* process;
 		Settings settings;
 
+		void checkELFHeaders(const std::vector<Module>& modules) const;
 		void removeAlreadyInjected(std::vector<Module>& modules) const;
 		void relocateModules(std::vector<Module>& modules) const;
 

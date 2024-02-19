@@ -40,11 +40,17 @@ namespace CoreInject {
 			"Deletes the module after injection. In case of a sandbox workaround, this affects the relocated module, not the original"
 		};
 
+		Flag ignoreELFHeader{
+			"ignoreELFHeader",
+			"Allows modules with invalid elf header to be injected (also allows mismatching architectures)"
+		};
+
 		static constexpr std::tuple allSettings{
 			&Settings::allowDoubleInjection,
 			&Settings::workaroundSandboxes,
 			&Settings::overwriteRelocationTarget,
-			&Settings::deleteAfterInjection
+			&Settings::deleteAfterInjection,
+			&Settings::ignoreELFHeader
 		};
 
 		template <typename F, std::size_t Idx = std::tuple_size_v<decltype(allSettings)> - 1>
