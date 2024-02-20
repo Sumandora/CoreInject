@@ -7,6 +7,7 @@ namespace CoreInject {
 
 	struct Flag {
 		std::string name;
+		std::string cleanName;
 		std::string description;
 		Flag* dependant = nullptr;
 		bool state = false;
@@ -20,28 +21,33 @@ namespace CoreInject {
 	struct Settings {
 		Flag allowDoubleInjection{
 			"allowDoubleInjection",
+			"Allow double injection",
 			"If enabled, then modules that are already loaded by the target process wont be filtered\n"
 			"Note: Turning this off might not filter accurately because the library might be renamed when 'workaroundSandboxes' is used without 'overwriteRelocationTarget'"
 		};
 
 		Flag workaroundSandboxes{
 			"workaroundSandboxes",
+			"Workaround sandboxes",
 			"Before injection, move the library to the current working directory of the target process"
 		};
 
 		Flag overwriteRelocationTarget{
 			"overwriteRelocationTarget",
+			"Overwrite relocation target",
 			"If the target file already exists, then it will be overwritten",
 			&workaroundSandboxes
 		};
 
 		Flag deleteAfterInjection{
 			"deleteAfterInjection",
+			"Delete after injection",
 			"Deletes the module after injection. In case of a sandbox workaround, this affects the relocated module, not the original"
 		};
 
 		Flag ignoreELFHeader{
 			"ignoreELFHeader",
+			"Ignore ELF header",
 			"Allows modules with invalid elf header to be injected (also allows mismatching architectures)"
 		};
 
