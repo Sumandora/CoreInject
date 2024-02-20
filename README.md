@@ -34,9 +34,6 @@ cd Build
 cmake ..
 cmake --build . -j $(nproc)
 ```
-
-## Installing
-
 To install (run as root):
 ```bash
 cmake --install .
