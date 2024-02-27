@@ -29,7 +29,7 @@ namespace CoreInject {
 		Flag workaroundSandboxes{
 			"workaroundSandboxes",
 			"Workaround sandboxes",
-			"Before injection, move the library to the current working directory of the target process"
+			"Before injection, copy the library to the current working directory of the target process"
 		};
 
 		Flag overwriteRelocationTarget{
