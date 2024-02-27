@@ -20,11 +20,11 @@ This will inject lib1.so and lib2.so into the process with ID 123.
 
 The following flags can be used to control injection behavior:
 
-- ˋ--allowDoubleInjectionˋ: If enabled, then modules that are already loaded by the target process wont be filtered
-- ˋ--workaroundSandboxesˋ: Before injection, copy the library to the current working directory of the target process
-- ˋ--overwriteRelocationTargetˋ: If the target file already exists, then it will be overwritten (Requires ˋ--workaroundSandboxesˋ)
-- ˋ--deleteAfterInjectionˋ: Deletes the module after injection. In case of a sandbox workaround, this affects the relocated module, not the original
-- ˋ--ignoreELFHeaderˋ: Allows modules with invalid elf header to be injected (also allows mismatching architectures)
+- `--allowDoubleInjection`: If enabled, then modules that are already loaded by the target process wont be filtered
+- `--workaroundSandboxes`: Before injection, copy the library to the current working directory of the target process
+- `--overwriteRelocationTarget`: If the target file already exists, then it will be overwritten (Requires `--workaroundSandboxes`)
+- `--deleteAfterInjection`: Deletes the module after injection. In case of a sandbox workaround, this affects the relocated module, not the original
+- `--ignoreELFHeader`: Allows modules with invalid elf header to be injected (also allows mismatching architectures)
 
 ## Building
 
