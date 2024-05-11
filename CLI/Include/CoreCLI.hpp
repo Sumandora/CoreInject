@@ -5,8 +5,8 @@
 
 namespace CoreInject::CoreCLI {
 	const std::string privilegeError =
-		"ERROR: Your system's ptrace_scope setting is currently set above 0."
-		"In order to run this application, you must run it with root privileges."
+		"ERROR: Your system's ptrace_scope setting is currently set above 0. "
+		"In order to run this application, you must run it with root privileges. "
 		"Please note that lowering ptrace_scope may compromise your system's security.";
 
 	struct Parameter {
@@ -21,7 +21,7 @@ namespace CoreInject::CoreCLI {
 		return "--" + flagName;
 	}
 
-	constexpr std::string version = "1.2";
+	constexpr std::string version = "1.3";
 }
 
 #endif

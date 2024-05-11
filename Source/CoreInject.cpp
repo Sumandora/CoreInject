@@ -117,8 +117,9 @@ std::size_t CoreInject::CoreInject::run(std::vector<Module> modules) const
 
 	for (const Module& module : modules) {
 		// insane syntax design:
-		static std::string dlopen = R"a(-data-evaluate-expression "((void*(*)(const char*, int))dlopen)(\"{}\", 2)")a";
-		gdb.write(std::vformat(dlopen, std::make_format_args("./" + std::filesystem::relative(module, process->getCwd()).string())));
+		static std::format_string<std::string> dlopen = R"a(-data-evaluate-expression "((void*(*)(const char*, int))dlopen)(\"./{}\", 2)")a";
+		std::string modulePath = std::filesystem::relative(module, process->getCwd()).string();
+		gdb.write(std::vformat(dlopen.get(), std::make_format_args(modulePath)));
 		pair = gdb.awaitOneOf({ "done", "error", "stopped" });
 		if (pair.first == "error")
 			throw std::runtime_error("Failed to inject " + module.string() + ": " + pair.second);
